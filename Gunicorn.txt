@@ -1,0 +1,18 @@
+   Gunicorn
+_____________
+
+It is an application server or WSGI server this runs your django application, it sit between the web sever (nginx) and django application, it translates HTTP requests from web server into WSGI request and django process the WSGI request and then gunicorn translates WSGI requests into HTTP requests and forward to web server (nginx)
+
+
+Basic Workflow :-
+-----------------
+
+1. HTTP Request: A client (like a web browser) sends an HTTP request.
+2. Nginx: The web server receives the HTTP request and forwards the request to Gunicorn via the Unix socket.
+3. Gunicorn: The application server/WSGI server translates the HTTP request into a WSGI request. This involves :-
+	a. Parsing the HTTP request.
+	b. Converting it into a WSGI-compliant format.
+	c. Calling the WSGI application callable (which is your Django application) with the WSGI environment and a callback function to start 	    the response.
+4. Django: The Django application processes the WSGI request, accesses the database if needed, and returns a response in a WSGI-            compliant format.
+5. Gunicorn: Gunicorn translates the WSGI response back into an HTTP response.
+6. Nginx: Nginx receives the HTTP response from Gunicorn and forwards it back to the client.

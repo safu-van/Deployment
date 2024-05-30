@@ -1,0 +1,28 @@
+   Nginx
+__________
+
+Nginx is a high-performance web server and reverse proxy server. It is known for its ability to handle a large number of simultaneous connections efficiently, making it ideal for high-traffic websites. In addition to serving static files and load balancing, Nginx is often used as a reverse proxy for web applications.
+
+
+Why Use Nginx with Django :-
+----------------------------
+
+1. Performance: Nginx is capable of handling a high number of concurrent connections, making it suitable for high-traffic websites.
+2. Reverse Proxy: Acts as an intermediary, forwarding requests from clients to backend servers (like Gunicorn running Django) and then returning the server's responses to the clients.
+3. Load Balancing: Distributes incoming traffic across multiple backend servers to ensure no single server is overwhelmed.
+4. Static File Serving: Efficiently serves static files (like CSS, JavaScript, and images) directly to clients, reducing the load on the Django application.
+5. Security: Offers features like SSL termination, which secures communication between clients and your server.
+
+
+Workflow :-
+-----------
+
+1. Client: Sends an HTTP request to the server.
+2. Nginx: Receives the request and checks if it's for a static file (like an image or CSS file).
+	a. If it's a static file, Nginx serves it directly from the file system.
+	b. If it's a dynamic request, Nginx forwards it to Gunicorn.
+3. Gunicorn: Processes the request using the Django application.
+4. Django: Handles the request, accessing the database if necessary, and returns a response.
+5. Gunicorn: Sends the response back to Nginx.
+6. Nginx: Forwards the response to the client.
+
