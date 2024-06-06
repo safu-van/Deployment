@@ -1,0 +1,142 @@
+   AWS Hosting Steps
+______________________
+
+Create an Instance.
+
+Open the directory which contains .pem file in terminal and connect to the Instance.
+NB :- if using windows it is better to use GIT bash instead of terminal
+
+
+Step 1 — Installing the Packages from the Ubuntu Repositories :-
+
+	- sudo apt update
+	- sudo apt install python3-venv python3-dev libpq-dev postgresql postgresql-contrib nginx curl
+
+Step 2 — Creating the PostgreSQL Database and User :-
+	
+	- sudo -u postgres psql
+	- CREATE DATABASE <db_name>;
+	- CREATE USER <db_user> WITH PASSWORD '<db_password>';
+	- ALTER ROLE <db_user> SET client_encoding TO 'utf8';
+	- ALTER ROLE <db_user> SET default_transaction_isolation TO 'read committed';
+	- ALTER ROLE <db_user> SET timezone TO 'UTC';
+	- GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <db_user>;
+	- \q  (QUIT from DATABASE)
+
+Step 3 — Creating a Python Virtual Environment for your Project :-
+
+	- mkdir ~/<project_directory_name> (Create a directory)
+	- cd ~/<project_directory_name>
+	- python3 -m venv <venv_name>
+	- source <venv_name>/bin/activate
+	- pip install django gunicorn psycopg2-binary
+
+Step 4 — Clone github repository :-
+
+	- git clone <your_repository_link>
+	- ls (now there you will see your project folder)
+	- cd <project_folder_name>
+	- nano <project_name>/settings.py (enter to your settings.py file)
+	- (if you had used .env file then give the values in .env file to the settings.py now.)
+	- DATABASES = {
+	    'default': {
+	        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+	        'NAME': 'db_name',
+	        'USER': 'db_user',
+	        'PASSWORD': 'db_password',
+	        'HOST': 'localhost',
+	        'PORT': ' ',
+	    }
+	  }
+	- STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
+	 	NB :- (add this line under STATICFILES_DIRS in settings.py and ensure that the path name in STATICFILES_DIRS and STATIC_ROOT should not be same)
+	- pip install -r requirements.txt  (requirements.txt file should be present in your project folder)
+	- python manage.py makemigrations
+	- python manage.py migrate
+	  	NB :- there will be chance to encounter an error if you got an error then follow the commands :-
+			- sudo -i -u postgres
+			- psql
+			- \c <db_name>  (Enter to your database)
+			- ALTER USER <db_user> WITH CREATEDB;
+			- GRANT ALL PRIVILEGES ON DATABASE <db_name> TO <db_user>;
+			- GRANT ALL PRIVILEGES ON SCHEMA public TO <db_user>;
+			- \q
+			- exit 
+	- python manage.py createsuperuser
+	- python manage.py collectstatic
+	- deactivate (deactivate the virtual env)
+
+Step 5 — Gunicorn Setup :-
+	
+	- sudo nano /etc/systemd/system/gunicorn.socket
+	- write the following code :- 
+
+		[Unit]
+		Description=gunicorn socket
+
+		[Socket]
+		ListenStream=/run/gunicorn.sock
+
+		[Install]
+		WantedBy=sockets.target
+
+	- sudo nano /etc/systemd/system/gunicorn.service
+	- write the following code :-   NB : (change the values where i put in angle bracket as your requirements)
+
+		[Unit]
+		Description=gunicorn daemon
+		Requires=gunicorn.socket
+		After=network.target
+
+		[Service]
+		User=ubuntu
+		Group=www-data
+		WorkingDirectory=/home/ubuntu/<project_directory>/<project_folder>
+		ExecStart=/home/ubuntu/<project_directory>/<venv_name>/bin/gunicorn \
+          	          --access-logfile - \
+		          --workers 3 \
+		          --bind unix:/run/gunicorn.sock \
+			  <project_name>.wsgi:application
+
+		[Install]
+		WantedBy=multi-user.target
+
+	- sudo systemctl start gunicorn.socket
+	- sudo systemctl enable gunicorn.socket  
+	- sudo systemctl status gunicorn.socket   NB :- Ensure that the Active : active (listening)
+	- file /run/gunicorn.sock 
+	- sudo journalctl -u gunicorn.socket
+	- sudo systemctl status gunicorn   NB :- Ensure that the Active : inactive (dead)
+	- curl --unix-socket /run/gunicorn.sock localhost   NB :- HTML code will be shown
+	- sudo systemctl status gunicorn   NB :- Ensure that the Active : active (running)
+	- sudo systemctl daemon-reload
+	- sudo systemctl restart gunicorn
+
+Step 6 — Configure Nginx :-
+	
+	- sudo nano /etc/nginx/sites-available/<project_directory_name>
+	- write the following code :-   NB : (change the values where i put in angle bracket as your requirements)
+		server {
+		    listen 80;
+		    server_name <your_server_IP_or_domain>;
+
+		    location = /favicon.ico { access_log off; log_not_found off; }
+		    location /staticfiles/ {
+		        root /home/ubuntu/<project_directory>/<project_folder>;
+		    }
+
+		    location / {
+		        include proxy_params;
+		        proxy_pass http://unix:/run/gunicorn.sock;
+		    }
+		}
+	- sudo ln -s /etc/nginx/sites-available/<project_directory_name> /etc/nginx/sites-enabled
+	- sudo nginx -t   NB :- Ensure it shows syntax is ok and test is successful
+	- sudo systemctl restart nginx
+	- sudo ufw delete allow 8000
+	- sudo ufw allow 'Nginx Full'
+
+
+........HOSTING COMPLETED........
+
+Now you can visit your sever IP or Domain to see the website if the page is not loading then add HTTP rule in aws security.
