@@ -8,7 +8,7 @@ Why Use Nginx with Django :-
 ----------------------------
 
 1. Performance: Nginx is capable of handling a high number of concurrent connections, making it suitable for high-traffic websites.
-2. Reverse Proxy: Acts as an intermediary, forwarding requests from clients to backend servers (like Gunicorn running Django) and then returning the server's responses to the clients.
+2. Reverse Proxy: Acts as an intermediate, forwarding requests from clients to backend servers (like Gunicorn running Django) and then returning the server's responses to the clients.
 3. Load Balancing: Distributes incoming traffic across multiple backend servers to ensure no single server is overwhelmed.
 4. Static File Serving: Efficiently serves static files (like CSS, JavaScript, and images) directly to clients, reducing the load on the Django application.
 5. Security: Offers features like SSL termination, which secures communication between clients and your server.
@@ -26,3 +26,42 @@ Workflow :-
 5. Gunicorn: Sends the response back to Nginx.
 6. Nginx: Forwards the response to the client.
 
+
+What is Reverse Proxy?
+----------------------
+A reverse proxy is a server that sits between client devices and backend servers, forwarding client requests to the appropriate backend server and then returning the server's response to the client. This setup can provide several benefits, including load balancing, improved security, and caching. Nginx is a reverse proxy server.
+
+
+What is Load Balancing?
+-----------------------
+Load balancing is the process of distributing incoming network traffic across multiple servers to ensure that no single server becomes overwhelmed.
+
+	how to Balance Requests?
+	------------------------
+	Define the backend servers in upstream block. The nginx will distribute the incoming request those servers in the upstream block.
+
+	How to define upstream block?
+	-----------------------------
+	upstream my_app {
+		server 127.0.0.1:8001;
+		server 127.0.0.1:8002;
+		server 127.0.0.1:8003;
+	}
+	NB:- instead of my_app you can give any name, that name is representing the group of servers that your using for load balancing.
+
+
+What is Location block?
+----------------------------------------
+In the location block it defines that how nginx should process the requests for specified URI(Uniform Resource Identifier) path. It allows you to configure URI for serving static files etc...
+
+	How it works?
+	-------------
+	location /staticfiles/ {
+        root /home/ubuntu/<project_directory>/<project_folder>;
+    }
+	This is a location block is used for serving static files directly by nginx.
+
+	The working is :-
+		- if the request matches with "/staticfiles/"
+		- it then use the root directory to determine the absolute path to the file requested.
+		- then nginx directly serve the file to the client from the filesystem without involving any backend sever like Gunicorn.
