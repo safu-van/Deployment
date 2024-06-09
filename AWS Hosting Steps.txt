@@ -25,8 +25,6 @@ Step 2 — Creating the PostgreSQL Database and User :-
 
 Step 3 — Creating a Python Virtual Environment for your Project :-
 
-	- mkdir ~/<project_directory_name> (Create a directory)
-	- cd ~/<project_directory_name>
 	- python3 -m venv <venv_name>
 	- source <venv_name>/bin/activate
 	- pip install django gunicorn psycopg2-binary
@@ -37,7 +35,7 @@ Step 4 — Clone github repository :-
 	- ls (now there you will see your project folder)
 	- cd <project_folder_name>
 	- nano <project_name>/settings.py (enter to your settings.py file)
-	- (if you had used .env file then give the values in .env file to the settings.py now.)
+	- NB:- (if you had used .env file then give the values in .env file to the settings.py now.)
 	- DATABASES = {
 	    'default': {
 	        'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -50,10 +48,11 @@ Step 4 — Clone github repository :-
 	  }
 	- STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
 	 	NB :- (add this line under STATICFILES_DIRS in settings.py and ensure that the path name in STATICFILES_DIRS and STATIC_ROOT should not be same)
-	- pip install -r requirements.txt  (requirements.txt file should be present in your project folder)
+	- python manage.py collectstatic
+	- pip install -r requirements.txt  NB:- (requirements.txt file should be present in your project folder)
 	- python manage.py makemigrations
 	- python manage.py migrate
-	  	NB :- there will be chance to encounter an error if you got an error then follow the commands :-
+	  	NB :- there will be chance to get an error if you got error then follow the commands :-
 			- sudo -i -u postgres
 			- psql
 			- \c <db_name>  (Enter to your database)
@@ -62,8 +61,8 @@ Step 4 — Clone github repository :-
 			- GRANT ALL PRIVILEGES ON SCHEMA public TO <db_user>;
 			- \q
 			- exit 
+			- python manage.py migrate
 	- python manage.py createsuperuser
-	- python manage.py collectstatic
 	- deactivate (deactivate the virtual env)
 
 Step 5 — Gunicorn Setup :-
@@ -91,12 +90,12 @@ Step 5 — Gunicorn Setup :-
 		[Service]
 		User=ubuntu
 		Group=www-data
-		WorkingDirectory=/home/ubuntu/<project_directory>/<project_folder>
-		ExecStart=/home/ubuntu/<project_directory>/<venv_name>/bin/gunicorn \
-          	          --access-logfile - \
-		          --workers 3 \
-		          --bind unix:/run/gunicorn.sock \
-			  <project_name>.wsgi:application
+		WorkingDirectory=/home/ubuntu/<project_folder_name>
+		ExecStart=/home/ubuntu/<venv_name>/bin/gunicorn \
+          	    --access-logfile - \
+		        --workers 3 \
+		        --bind unix:/run/gunicorn.sock \
+				<project_name>.wsgi:application
 
 		[Install]
 		WantedBy=multi-user.target
@@ -114,15 +113,17 @@ Step 5 — Gunicorn Setup :-
 
 Step 6 — Configure Nginx :-
 	
-	- sudo nano /etc/nginx/sites-available/<project_directory_name>
+	- sudo nano /etc/nginx/sites-available/<project_name>
 	- write the following code :-   NB : (change the values where i put in angle bracket as your requirements)
+
 		server {
 		    listen 80;
 		    server_name <your_server_IP_or_domain>;
 
 		    location = /favicon.ico { access_log off; log_not_found off; }
-		    location /staticfiles/ {
-		        root /home/ubuntu/<project_directory>/<project_folder>;
+
+		    location /static/ {
+		        alias /home/ubuntu/<project_folder>/staticfiles/;
 		    }
 
 		    location / {
@@ -130,7 +131,8 @@ Step 6 — Configure Nginx :-
 		        proxy_pass http://unix:/run/gunicorn.sock;
 		    }
 		}
-	- sudo ln -s /etc/nginx/sites-available/<project_directory_name> /etc/nginx/sites-enabled
+
+	- sudo ln -s /etc/nginx/sites-available/<project_name> /etc/nginx/sites-enabled
 	- sudo nginx -t   NB :- Ensure it shows syntax is ok and test is successful
 	- sudo systemctl restart nginx
 	- sudo ufw delete allow 8000
@@ -139,4 +141,13 @@ Step 6 — Configure Nginx :-
 
 ........HOSTING COMPLETED........
 
-Now you can visit your sever IP or Domain to see the website if the page is not loading then add HTTP rule in aws security.
+Now you can visit your sever IP or Domain to see the website if the page is not loading then check that HTTP rule added in aws security if not then add it.
+
+When you visit webiste if it fail to load static check console if the error is 403 then run these commands:-
+	- ps aux | grep nginx
+	- sudo usermod -a -G ubuntu www-data
+	- NB :- (come to your project folder where staticfiles there)
+	- sudo chown -R :www-data staticfiles 
+	- sudo systemctl restart nginx
+
+Now visit the website.
