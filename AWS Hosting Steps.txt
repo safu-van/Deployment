@@ -47,7 +47,7 @@ Step 4 — Clone github repository :-
 	    }
 	  }
 	- STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  
-	 	NB :- (add this line under STATICFILES_DIRS in settings.py and ensure that the path name in STATICFILES_DIRS and STATIC_ROOT should not be same)
+        	NB :- (add this line under STATICFILES_DIRS in settings.py and ensure that the path name in STATICFILES_DIRS and STATIC_ROOT should not be same)
 	- python manage.py collectstatic
 	- pip install -r requirements.txt  NB:- (requirements.txt file should be present in your project folder)
 	- python manage.py makemigrations
@@ -92,10 +92,10 @@ Step 5 — Gunicorn Setup :-
 		Group=www-data
 		WorkingDirectory=/home/ubuntu/<project_folder_name>
 		ExecStart=/home/ubuntu/<venv_name>/bin/gunicorn \
-          	    --access-logfile - \
+          		--access-logfile - \
 		        --workers 3 \
 		        --bind unix:/run/gunicorn.sock \
-				<project_name>.wsgi:application
+			<project_name>.wsgi:application
 
 		[Install]
 		WantedBy=multi-user.target
