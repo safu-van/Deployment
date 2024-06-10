@@ -1,0 +1,9 @@
+step 1:  Purchase Domain
+step 2:  Create a Host Zone in AWS Route 53.
+		- give your domain name and create host zone.
+		- now select the record which type is NS and copy the values in it one by one and paste it in nameservers in the platform where you buy domain. 
+		- create 2 new records :-
+			1. create record and select type A and in value give the instance IP.
+			2. create record and select type CNAME and in record name type www and in value type you domain xyz.in.
+step 3:  Now give your domain in nginx configuration :-
+		- server_name xyz.in www.xyz.in;   NB :- (restart nginx)
