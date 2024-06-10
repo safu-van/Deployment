@@ -1,3 +1,6 @@
+  Register Domain 
+___________________
+
 step 1:  Purchase Domain
 step 2:  Create a Host Zone in AWS Route 53.
 		- give your domain name and create host zone.
@@ -7,3 +10,13 @@ step 2:  Create a Host Zone in AWS Route 53.
 			2. create record and select type CNAME and in record name type www and in value type you domain xyz.in.
 step 3:  Now give your domain in nginx configuration :-
 		- server_name xyz.in www.xyz.in;   NB :- (restart nginx)
+
+
+  Secure Website
+__________________
+
+step 1:  sudo apt install certbot python3-certbot-nginx
+step 2:  sudo certbot --nginx -d xyz.in -d www.xyz.in
+
+
+
