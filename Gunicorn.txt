@@ -12,7 +12,7 @@ Basic Workflow :-
 3. Gunicorn: The application server/WSGI server translates the HTTP request into a WSGI request. This involves :-
 	a. Parsing the HTTP request.
 	b. Converting it into a WSGI-compliant format.
-	c. Calling the WSGI application callable (which is your Django application) with the WSGI environment and a callback function to start 	    the response.
-4. Django: The Django application processes the WSGI request, accesses the database if needed, and returns a response in a WSGI-            compliant format.
+	c. Calling the WSGI application callable (which is your Django application) with the WSGI environment and a callback function to start the response.
+4. Django: The Django application processes the WSGI request, accesses the database if needed, and returns a response in a WSGI-compliant format.
 5. Gunicorn: Gunicorn translates the WSGI response back into an HTTP response.
 6. Nginx: Nginx receives the HTTP response from Gunicorn and forwards it back to the client.
