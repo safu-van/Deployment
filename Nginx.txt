@@ -56,12 +56,12 @@ In the location block it defines that how nginx should process the requests for 
 
 	How it works?
 	-------------
-	location /staticfiles/ {
-        root /home/ubuntu/<project_directory>/<project_folder>;
-    }
+	location /static/ {
+        	root /home/ubuntu/<project_directory>/<project_folder>/static/;
+    	}
 	This is a location block is used for serving static files directly by nginx.
 
 	The working is :-
-		- if the request matches with "/staticfiles/"
+		- if the request matches with "/static/"
 		- it then use the root directory to determine the absolute path to the file requested.
 		- then nginx directly serve the file to the client from the filesystem without involving any backend sever like Gunicorn.
